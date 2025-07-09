@@ -1,5 +1,7 @@
 package se.lexicon.flightbooking_api.dto;
 
+import org.springframework.context.annotation.Bean;
+
 import java.time.LocalDateTime;
 
 public record FlightBookingDTO(

@@ -1,6 +1,8 @@
 package se.lexicon.flightbooking_api.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.lexicon.flightbooking_api.dto.AvailableFlightDTO;
