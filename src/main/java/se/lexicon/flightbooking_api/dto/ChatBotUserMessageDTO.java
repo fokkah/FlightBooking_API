@@ -6,5 +6,6 @@ import lombok.Data;
 public class ChatBotUserMessageDTO {
     private String message;
     private String email;
+    private String passengerName;
 
 }
