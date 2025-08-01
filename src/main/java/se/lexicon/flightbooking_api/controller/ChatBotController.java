@@ -1,13 +1,20 @@
 package se.lexicon.flightbooking_api.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 import se.lexicon.flightbooking_api.dto.*;
+import se.lexicon.flightbooking_api.service.AiTools;
+import se.lexicon.flightbooking_api.service.AiToolsService;
 import se.lexicon.flightbooking_api.service.FlightBookingService;
+import se.lexicon.flightbooking_api.service.OpenAiService;
 
 import java.util.List;
 
@@ -16,63 +23,43 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatBotController {
 
+
+
     private final FlightBookingService flightBookingService;
+    private final OpenAiService openAiService;
 
     @PostMapping("/message")
-    public ResponseEntity<ChatBotResponseDTO> handleMessage(@RequestBody ChatBotUserMessageDTO chatMessage) {
-        String message = chatMessage.getMessage().toLowerCase();
-        String email = chatMessage.getEmail();
-        String response;
+    public Mono<ResponseEntity<ChatResponse>> handleMessage(@RequestBody ChatBotUserMessageDTO chatRequest) {
 
-        if (message.contains("book flight")) {
-            if (email == null || email.isEmpty()) {
-                response = "You need to provide a valid email address";
-            } else {
-                Long flightId = extractFlightId(message);
-                if (flightId == null) {
-                    response = "You need to provide a valid flight id";
-                } else {
-                    BookFlightRequestDTO requestDTO = new BookFlightRequestDTO(chatMessage.getPassengerName(), email);
-                    FlightBookingDTO booking = flightBookingService.bookFlight(flightId, requestDTO);
-                    if (booking != null) {
-                        response = "You have successfully booked flight with id: " + flightId;
-                    } else {
-                        response = "Sorry! the flight with id: " + flightId + " could not be booked, please try again";
-                    }
-                }
-            }
-        } else if (message.contains("available flights")) {
-            List<AvailableFlightDTO> flights = flightBookingService.findAvailableFlights();
-            response = "Available flights: " + flights.toString();
-        } else if ((message.contains("my bookings") || message.contains("my flights")) && email != null) {
-            List<FlightBookingDTO> bookings = flightBookingService.findBookingsByEmail(email);
-            response = "This is what you have booked so far: " + bookings.toString();
-        } else if ((message.contains("cancel") || message.contains("delete")) && email != null) {
-            Long flightId = extractFlightId(message);
-            if (flightId != null) {
-                flightBookingService.cancelFlight(flightId, email);
-                response = "Flight " + flightId + " is now cancelled!";
-            } else {
-                response = "You need to specify a flight ID to cancel!";
-            }
-        } else {
-            response = "I didn't really understand what you were asking for, can you be more specific?";
-        }
-        return ResponseEntity.ok(new ChatBotResponseDTO(response));
+        String email = chatRequest.getEmail();
+        String message = chatRequest.getMessage();
+
+        return openAiService.getChatResponse(email, message, "user")
+                .map(aiResponse -> new Generation(new AssistantMessage(aiResponse)))
+                .flatMap(generation ->
+                 AiToolsService.parse(generation)
+                        .map(toolCall -> handleToolCall(toolCall, chatRequest)
+                                .map(result -> ResponseEntity.ok(
+                                        new ChatResponse(List.of(new Generation(new AssistantMessage(result)))))))
+                        .orElseGet(() -> Mono.just(ResponseEntity.ok(
+                                new ChatResponse(List.of(generation))
+                        ))));
     }
 
-    private Long extractFlightId(String message) {
-        String[] words = message.split(" ");
-        for (int i = 0; i < words.length; i++) {
-            if (words[i].equals("flight") && i + 1 < words.length) {
-                try {
-                    return Long.parseLong(words[i + 1]);
-                } catch (NumberFormatException ignored) {
-                }
-            }
+    private Mono<String> handleToolCall(AiTools toolCall, ChatBotUserMessageDTO chatRequest) {
+        switch (toolCall.getTool()) {
+            case "searchFlights":
+                return Mono.just(flightBookingService.findAvailableFlights().toString());
+            case "bookFlight":
+                Long flightId = toolCall.getParams().get("flightId").asLong();
+                String email = chatRequest.getEmail();
+                String passengerName = toolCall.getParams().get("passengerName").asText();
+                return Mono.just("Flight booked for " + passengerName + " (Id: " + flightId + ")");
+            case "cancelBooking":
+                Long cancelId = toolCall.getParams().get("flightId").asLong();
+                return Mono.just("Flight cancelled (Id: " + cancelId + ")");
+            default:
+                return Mono.just("Unknown tool call: " + toolCall.getTool());
         }
-        return null;
     }
 }
-
-

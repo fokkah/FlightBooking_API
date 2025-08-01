@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.Map;
 
-import static com.sun.org.apache.xml.internal.serializer.utils.Utils.messages;
 
 @Service
 public class OpenAiService {
@@ -25,9 +24,9 @@ public class OpenAiService {
 
     }
 
-    public Mono<String> getChatResponse(String userId, String prompt, String content) {
-        chatHistoryService.addMessage(userId, prompt, content);
-        List<Map<String, String>> chatHistory = chatHistoryService.getHistory(userId);
+    public Mono<String> getChatResponse(String email, String message, String content) {
+        chatHistoryService.addMessage(email, message, content);
+        List<Map<String, String>> chatHistory = chatHistoryService.getHistory(email);
 
         String requestBody = buildRequestBody(chatHistory);
 
@@ -38,7 +37,7 @@ public class OpenAiService {
                 .retrieve()
                 .bodyToMono(String.class)
                 .doOnSuccess(response -> {
-                    chatHistoryService.addMessage(userId, "assistant", response);
+                    chatHistoryService.addMessage(email, "assistant", response);
                 });
     }
 
