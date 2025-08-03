@@ -1,5 +1,6 @@
 package se.lexicon.flightbooking_api.service;
 
+import org.springframework.stereotype.Service;
 import se.lexicon.flightbooking_api.dto.AvailableFlightDTO;
 import se.lexicon.flightbooking_api.dto.BookFlightRequestDTO;
 import se.lexicon.flightbooking_api.dto.FlightBookingDTO;
@@ -7,6 +8,7 @@ import se.lexicon.flightbooking_api.dto.FlightListDTO;
 
 import java.util.List;
 
+@Service
 public interface FlightBookingService {
 
     FlightBookingDTO bookFlight(Long flightId, BookFlightRequestDTO bookingRequest);
