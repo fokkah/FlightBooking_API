@@ -23,7 +23,7 @@ import static java.util.Arrays.stream;
 public class FlightServiceIMPL implements FlightService {
     @Override
     public List<Flight> getAvailableFlights() {
-        return List.of();
+        return flightRepository.findByStatus(FlightStatus.AVAILABLE);
     }
 
     private final FlightRepository flightRepository;
