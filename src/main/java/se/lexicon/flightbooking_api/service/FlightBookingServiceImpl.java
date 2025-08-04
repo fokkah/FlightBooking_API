@@ -7,10 +7,12 @@ import se.lexicon.flightbooking_api.dto.AvailableFlightDTO;
 import se.lexicon.flightbooking_api.dto.BookFlightRequestDTO;
 import se.lexicon.flightbooking_api.dto.FlightBookingDTO;
 import se.lexicon.flightbooking_api.dto.FlightListDTO;
+import se.lexicon.flightbooking_api.entity.Flight;
 import se.lexicon.flightbooking_api.entity.FlightBooking;
 import se.lexicon.flightbooking_api.entity.FlightStatus;
 import se.lexicon.flightbooking_api.mapper.FlightBookingMapper;
 import se.lexicon.flightbooking_api.repository.FlightBookingRepository;
+import se.lexicon.flightbooking_api.repository.FlightRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +24,7 @@ public class FlightBookingServiceImpl implements FlightBookingService {
 
     private final FlightBookingRepository flightBookingRepository;
     private final FlightBookingMapper mapper;
+
 
 
     @Override
@@ -72,10 +75,6 @@ public class FlightBookingServiceImpl implements FlightBookingService {
 
     @Override
     public List<FlightListDTO> findAll() {
-        return flightBookingRepository.findAll()
-                .stream()
-                .map(mapper::toListDTO)
-                .collect(Collectors.toList());
+        return List.of();
     }
-
 }

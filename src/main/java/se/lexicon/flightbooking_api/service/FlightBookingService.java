@@ -5,6 +5,7 @@ import se.lexicon.flightbooking_api.dto.AvailableFlightDTO;
 import se.lexicon.flightbooking_api.dto.BookFlightRequestDTO;
 import se.lexicon.flightbooking_api.dto.FlightBookingDTO;
 import se.lexicon.flightbooking_api.dto.FlightListDTO;
+import se.lexicon.flightbooking_api.entity.Flight;
 
 import java.util.List;
 
