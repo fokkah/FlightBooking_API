@@ -16,31 +16,20 @@ public class OpenAiServiceIMPL  implements OpenAiService {
 
 
     private final OpenAiChatModel openAiChatModel;
-
-
     private final ChatMemory chatMemory;
+    private final ToolCalling toolCalling;
 
 
-
-    @Autowired
-    public OpenAiServiceIMPL(OpenAiChatModel openAiChatModel, ChatMemory chatMemory) {
+    public OpenAiServiceIMPL(OpenAiChatModel openAiChatModel, ChatMemory chatMemory, ToolCalling toolCalling) {
         this.openAiChatModel = openAiChatModel;
         this.chatMemory = chatMemory;
+        this.toolCalling = toolCalling;
     }
 
     @Override
     public String chatMessageToAi(final String message) {
 
-        if (message == null || message.isEmpty()) {
-            throw new IllegalArgumentException("Message cannot be null or empty");
-        }
-        try {
-            String chatMessageAsStreamFromAi = openAiChatModel.call(message);
-
-            return chatMessageAsStreamFromAi;
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Error in chatMessageToAi" + e.getMessage(), e);
-        }
+        return openAiChatModel.call(message);
     }
 
     @Override
@@ -67,7 +56,10 @@ public class OpenAiServiceIMPL  implements OpenAiService {
         }
 
         SystemMessage systemMessage = SystemMessage.builder().text("""
-                You are a helpfull and professional assistent working on "fokkAirlines" and youre name is fokkBot, that helps users with searching, booking and cancelling flights.""").build();
+                        You are a helpfull and professional assistent working on "fokkAirlines" and youre name is fokkBot, 
+                        that helps users with searching, booking and cancelling flights.
+                        """)
+                .build();
         UserMessage userMessage = UserMessage.builder().text(message).build();
 
         Prompt prompt = Prompt.builder()
@@ -82,6 +74,7 @@ public class OpenAiServiceIMPL  implements OpenAiService {
         return chatResponse.getResult() != null ? chatResponse.getResult().getOutput().getText() : "Does not compute";
     }
 
+    /*
     @Override
     public String chatMemory(final String message,final String conversationId) {
 
@@ -107,6 +100,27 @@ public class OpenAiServiceIMPL  implements OpenAiService {
         System.out.println("Memory size: " + chatMemory.get(conversationId).size());
 
         return chatResponse.getResult().getOutput().getText();
+    }
+     */
+    @Override
+    public String chatMemory(String message, String conversationId) {
+        if (message == null || message.trim().isEmpty()) {
+            throw new IllegalArgumentException("Message cannot be null or empty");
+        }
+        if (conversationId == null || conversationId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Conversation ID cannot be null or empty");
+        }
+        UserMessage userMessage = UserMessage.builder().text(message).build();
+        chatMemory.add(conversationId, userMessage);
+
+        Prompt prompt = Prompt.builder()
+                .messages(chatMemory.get(conversationId))
+                .build();
+
+        ChatResponse chatResponse = openAiChatModel.call(prompt);
+        chatMemory.add(conversationId, chatResponse.getResult().getOutput());
+        return chatResponse.getResult().getOutput().getText();
+
     }
 }
 

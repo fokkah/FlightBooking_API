@@ -20,6 +20,9 @@ public class FlightBooking {
     
     @Column(nullable = false)
     private String flightNumber;
+
+    @Column(nullable = true)
+    private String departure;
     
     private String passengerName;
     

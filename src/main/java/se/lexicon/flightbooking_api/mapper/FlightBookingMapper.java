@@ -38,6 +38,7 @@ public class FlightBookingMapper {
         return new FlightListDTO(
                 entity.getId(),
                 entity.getFlightNumber(),
+                entity.getDeparture(),
                 entity.getDepartureTime(),
                 entity.getArrivalTime(),
                 entity.getStatus().toString(),
