@@ -2,13 +2,13 @@ package se.lexicon.flightbooking_api.service;
 
 
 import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
+
 import se.lexicon.flightbooking_api.dto.AvailableFlightDTO;
 import se.lexicon.flightbooking_api.dto.BookFlightRequestDTO;
 import se.lexicon.flightbooking_api.dto.FlightBookingDTO;
-import se.lexicon.flightbooking_api.dto.FlightListDTO;
+
 
 import java.util.List;
 
