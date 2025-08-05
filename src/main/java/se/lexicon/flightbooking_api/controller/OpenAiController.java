@@ -35,7 +35,7 @@ public class OpenAiController {
     @GetMapping("/flight-assistant")
     public String flightAssistant(@RequestParam String message){
         String systemPrompt = """
-                You are a flight booking assistant.
+                You are a flight booking assistant for fokkAirlines. Your job is to assist users with flight-related queries.
                 You can help users find available flights and book them, but also find booked flights
                 when the user provides their email adress. The last thing you can help them with is to
                 cancel flights that they already have booked.
